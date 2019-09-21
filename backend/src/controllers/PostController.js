@@ -1,0 +1,44 @@
+// usado para criar, listar posts
+const Post = require('../models/Post.js');
+const sharp = require('sharp');
+const path = require('path');
+const fs = require('fs'); // file system
+
+module.exports = {
+  async index(req, res) {
+    const posts = await Post.find().sort('-createAt');
+    return res.json(posts);
+  },
+  async store(req, res) {
+    console.log(req.body);
+    const { author, place, description, hashtags } = req.body;
+    const { filename: image } = req.file;
+    const [name] = image.split('.');
+    const fileName = `${name}.jpg`;
+
+
+    await sharp(req.file.path)
+      .resize(500)
+      .jpeg({quality: 70})
+      .toFile(
+        path.resolve(req.file.destination, 'resized', fileName),
+      );
+
+    fs.unlinkSync(req.file.path);
+    const post = await Post.create({
+      author,
+      place,
+      description,
+      hashtags,
+      image: fileName,
+    });
+
+    req.io.emit('post', post); // vai emitir para todos os usuários que estão conectados
+    // todos os usuários da aplicação vão receber uma mensagem através do socket io em
+    // tempo real
+
+    return res.json(post);
+  },
+};
+
+// usado o await para funções assíncronas.
