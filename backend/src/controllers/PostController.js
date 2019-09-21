@@ -33,7 +33,8 @@ module.exports = {
       image: fileName,
     });
 
-    req.io.emit('post', post); // vai emitir para todos os usuários que estão conectados
+    req.io.emit('post', post);
+    // vai emitir para todos os usuários que estão conectados
     // todos os usuários da aplicação vão receber uma mensagem através do socket io em
     // tempo real
 
